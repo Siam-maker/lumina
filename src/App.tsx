@@ -15,6 +15,7 @@ import { ErrorLogView } from './components/ErrorLogView';
 import { BlueprintView } from './components/BlueprintView';
 import { QuestionBankView } from './components/QuestionBankModal';
 import { ResetModal } from './components/ResetModal';
+import { AmbientPlayerAndScratchpad } from './components/AmbientPlayerAndScratchpad';
 import {
   SESSIONS_DATA,
   SessionBlock,
@@ -403,6 +404,9 @@ export default function App() {
           </nav>
         </div>
       </div>
+
+      {/* Lo-Fi Ambient Study Soundscape & Student Scratchpad */}
+      <AmbientPlayerAndScratchpad soundEnabled={soundEnabled} />
 
       {/* Reset Confirmation Modal */}
       <ResetModal

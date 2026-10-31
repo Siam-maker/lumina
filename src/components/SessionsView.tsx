@@ -25,6 +25,8 @@ import {
 import { launchConfetti } from '../utils/confetti';
 import { playSuccessChime, playTickSound } from '../utils/sound';
 
+import { ScorePredictorWidget } from './ScorePredictorWidget';
+
 interface SessionsViewProps {
   completedSessions: Record<string, boolean>;
   weakSessions: Record<string, boolean>;
@@ -135,6 +137,12 @@ export const SessionsView: React.FC<SessionsViewProps> = ({
 
   return (
     <div className="space-y-8 pb-24">
+      {/* High-Impact AI Score Predictor & Readiness Widget */}
+      <ScorePredictorWidget
+        completedSessions={completedSessions}
+        solvedQuestions={solvedQuestions}
+      />
+
       {/* Day Selector Chips with warm off-white styling */}
       <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
         {DAYS_DATA.map((day) => {

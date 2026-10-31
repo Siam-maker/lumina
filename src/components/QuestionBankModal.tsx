@@ -250,6 +250,48 @@ export const QuestionBankView: React.FC<QuestionBankViewProps> = ({
               ))}
             </div>
 
+            {/* Interactive Math Sandbox / Self-Testing Checker */}
+            <div className="bg-[#FAF9F5] p-4.5 rounded-2xl border border-stone-200 space-y-2.5">
+              <span className="text-xs font-extrabold text-stone-800 uppercase tracking-wider block flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                <span>Test Your Final Answer (Self-Check):</span>
+              </span>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="Enter your calculated number (e.g. 78.16, 265000)..."
+                  id="sandbox-input"
+                  className="flex-1 px-3.5 py-2 bg-white border border-stone-300 rounded-xl text-xs font-mono text-stone-900 outline-none focus:border-stone-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const inputEl = document.getElementById('sandbox-input') as HTMLInputElement;
+                    const val = inputEl?.value.replace(/,/g, '').trim();
+                    if (!val) return;
+                    const isMatch = activeQuestion.numericalHighlights.some((nh) =>
+                      nh.value.replace(/,/g, '').toLowerCase().includes(val.toLowerCase())
+                    );
+                    const feedbackEl = document.getElementById('sandbox-feedback');
+                    if (feedbackEl) {
+                      if (isMatch) {
+                        playSuccessChime(soundEnabled);
+                        launchConfetti(window.innerWidth / 2, window.innerHeight / 2, 25);
+                        feedbackEl.innerHTML = '<span class="text-teal-700 font-bold">✅ Correct! Match found with model answer figures.</span>';
+                      } else {
+                        playTickSound(soundEnabled);
+                        feedbackEl.innerHTML = '<span class="text-rose-700 font-semibold">❌ Not quite matching the key targets. Check intermediate decimal rounding or formulas above.</span>';
+                      }
+                    }
+                  }}
+                  className="px-4 py-2 bg-stone-900 hover:bg-black text-white rounded-xl text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-2xs"
+                >
+                  Verify Math
+                </button>
+              </div>
+              <div id="sandbox-feedback" className="text-xs pt-0.5"></div>
+            </div>
+
             {/* Trap Warning */}
             {activeQuestion.trapWarning && (
               <div className="bg-rose-50/80 border border-rose-200 p-4 rounded-2xl text-xs text-rose-950 font-medium flex items-start gap-2.5">
