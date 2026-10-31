@@ -5,9 +5,7 @@ import {
   BookOpen,
   Sparkles,
   Award,
-  AlertCircle,
-  HelpCircle,
-  CheckCircle2,
+  Layers,
 } from 'lucide-react';
 import { Header } from './components/Header';
 import { SessionsView } from './components/SessionsView';
@@ -21,10 +19,8 @@ import {
   SESSIONS_DATA,
   SessionBlock,
   ErrorLogItem,
-  FORMULA_CHECKLIST,
 } from './data/roadmapData';
-import { QUESTION_BANK } from './data/questionBankData';
-import { playTickSound, playSuccessChime } from './utils/sound';
+import { playTickSound } from './utils/sound';
 
 type TabType = 'sessions' | 'timer' | 'recall' | 'errors' | 'blueprint' | 'questions';
 
@@ -36,7 +32,7 @@ const INITIAL_ERROR_LOGS: ErrorLogItem[] = [
     problemRef: 'Q102 Fine Producers',
     errorType: 'Concept',
     whatWentWrong: 'Calculated Fixed MOH rate using units sold (40,000) instead of units produced (50,000).',
-    correctRecipe: 'Fixed MOH rate = Total Fixed MOH ÷ UNITS PRODUCED, always. Unit inventory cost is never based on sales.',
+    correctRecipe: 'Fixed MOH rate = Total Fixed MOH ÷ UNITS PRODUCED, always. Inventory cost is never based on sales volume.',
     resolved: true,
   },
   {
@@ -99,7 +95,7 @@ export default function App() {
     setToastMessage(msg);
     setTimeout(() => {
       setToastMessage(null);
-    }, 3500);
+    }, 3200);
   };
 
   // Load from LocalStorage
@@ -141,13 +137,12 @@ export default function App() {
     }
   }, [completedSessions, weakSessions, solvedQuestions, masteredFormulas, errorLogs, soundEnabled, isLoading]);
 
-  // Handler toggles
   const handleToggleSession = (sessionId: string) => {
     setCompletedSessions((prev) => {
       const nextState = !prev[sessionId];
       const updated = { ...prev, [sessionId]: nextState };
       if (nextState) {
-        showToast('Block completed! Keep up the momentum.');
+        showToast('Study block completed! High-yield progress.');
       }
       return updated;
     });
@@ -164,7 +159,7 @@ export default function App() {
   const handleToggleQuestion = (questionId: string) => {
     setSolvedQuestions((prev) => {
       const next = !prev[questionId];
-      if (next) showToast(`Problem ${questionId} marked solved!`);
+      if (next) showToast(`Problem ${questionId} marked solved.`);
       return { ...prev, [questionId]: next };
     });
   };
@@ -172,7 +167,7 @@ export default function App() {
   const handleToggleMastered = (formulaId: string) => {
     setMasteredFormulas((prev) => {
       const next = !prev[formulaId];
-      if (next) showToast('Formula mastered from memory!');
+      if (next) showToast('Formula committed to recall memory!');
       return { ...prev, [formulaId]: next };
     });
   };
@@ -180,7 +175,7 @@ export default function App() {
   const handleStartSessionTimer = (session: SessionBlock) => {
     setSelectedSessionForTimer(session);
     setActiveTab('timer');
-    showToast(`Timer primed for: ${session.title}`);
+    showToast(`Focus timer ready for: ${session.title}`);
   };
 
   const handleSelectQuestion = (qId: string) => {
@@ -195,19 +190,19 @@ export default function App() {
       timestamp: Date.now(),
     };
     setErrorLogs((prev) => [newEntry, ...prev]);
-    showToast('Mistake logged for Day 4 re-solve round.');
+    showToast('Logged for Day 4 surgical re-solve.');
   };
 
   const handleToggleResolved = (id: string) => {
     setErrorLogs((prev) =>
       prev.map((item) => (item.id === id ? { ...item, resolved: !item.resolved } : item))
     );
-    showToast('Status updated.');
+    showToast('Re-solve status updated.');
   };
 
   const handleDeleteError = (id: string) => {
     setErrorLogs((prev) => prev.filter((item) => item.id !== id));
-    showToast('Error entry deleted.');
+    showToast('Error record removed.');
   };
 
   const handleConfirmReset = () => {
@@ -217,7 +212,7 @@ export default function App() {
     setMasteredFormulas({});
     setErrorLogs(INITIAL_ERROR_LOGS);
     localStorage.clear();
-    showToast('All progress reset to baseline.');
+    showToast('All progress reset to fresh baseline.');
   };
 
   // Export JSON Backup
@@ -239,7 +234,7 @@ export default function App() {
     a.download = `IPE105-RescuePlan-Backup-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    showToast('Progress backup file downloaded!');
+    showToast('Backup JSON exported successfully!');
   };
 
   // Import JSON Backup
@@ -273,19 +268,19 @@ export default function App() {
   const completedSessionsCount = SESSIONS_DATA.filter((s) => !!completedSessions[s.id]).length;
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-[#F8FAFF] via-[#EEF2FF] to-[#FDF2F8] text-[#0F172A]">
-      {/* 2-3 big blurred pastel blobs (indigo, teal, pink) slowly floating in the background */}
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-[#FAF9F5] via-[#F4F3ED] to-[#ECEAE2] text-[#1C1917]">
+      {/* Warm off-white floating ambient blobs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="blob-1 absolute -top-40 -left-40 w-96 h-96 sm:w-[520px] sm:h-[520px] rounded-full bg-indigo-300/20 blur-[90px]" />
-        <div className="blob-2 absolute top-1/3 -right-32 w-80 h-80 sm:w-[480px] sm:h-[480px] rounded-full bg-teal-300/18 blur-[95px]" />
-        <div className="blob-3 absolute -bottom-32 left-1/4 w-96 h-96 sm:w-[500px] sm:h-[500px] rounded-full bg-pink-300/15 blur-[100px]" />
+        <div className="warm-blob-1 absolute -top-40 -left-40 w-96 h-96 sm:w-[560px] sm:h-[560px] rounded-full bg-amber-200/22 blur-[100px]" />
+        <div className="warm-blob-2 absolute top-1/3 -right-32 w-80 h-80 sm:w-[500px] sm:h-[500px] rounded-full bg-teal-200/18 blur-[105px]" />
+        <div className="warm-blob-3 absolute -bottom-32 left-1/3 w-96 h-96 sm:w-[520px] sm:h-[520px] rounded-full bg-rose-200/16 blur-[110px]" />
       </div>
 
-      {/* Toast Notification Notification Pill */}
+      {/* Toast Notification Pill */}
       {toastMessage && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-4 duration-300 pointer-events-none">
-          <div className="bg-slate-900/90 text-white text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl backdrop-blur-md flex items-center gap-2 border border-slate-700/50">
-            <Sparkles className="w-4 h-4 text-teal-400 flex-shrink-0" />
+        <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-4 duration-300 pointer-events-none">
+          <div className="bg-stone-900/95 text-stone-100 text-xs font-semibold px-4.5 py-2.5 rounded-2xl shadow-xl backdrop-blur-md flex items-center gap-2.5 border border-stone-700/60">
+            <Sparkles className="w-4 h-4 text-amber-400 flex-shrink-0" />
             <span>{toastMessage}</span>
           </div>
         </div>
@@ -305,12 +300,12 @@ export default function App() {
           onImportData={handleImportData}
         />
 
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-8">
           {isLoading ? (
-            <div className="space-y-4">
-              <div className="h-40 rounded-3xl skeleton-shimmer" />
-              <div className="h-28 rounded-3xl skeleton-shimmer" />
-              <div className="h-28 rounded-3xl skeleton-shimmer" />
+            <div className="space-y-5">
+              <div className="h-44 rounded-3xl skeleton-shimmer" />
+              <div className="h-32 rounded-3xl skeleton-shimmer" />
+              <div className="h-32 rounded-3xl skeleton-shimmer" />
             </div>
           ) : (
             <>
@@ -375,9 +370,9 @@ export default function App() {
           )}
         </main>
 
-        {/* Bottom Floating Pill Navigation on Mobile (Sessions · Timer · Log · Cheat card · Blueprint) */}
-        <div className="fixed bottom-3 left-1/2 transform -translate-x-1/2 z-40 md:hidden w-auto max-w-[95%]">
-          <nav className="flex items-center gap-1 bg-white/90 backdrop-blur-xl border border-indigo-200/80 px-2 py-1.5 rounded-full shadow-[0_10px_35px_rgba(79,70,229,0.18)]">
+        {/* Bottom Floating Pill Navigation on Mobile */}
+        <div className="fixed bottom-3.5 left-1/2 transform -translate-x-1/2 z-40 md:hidden w-auto max-w-[95%]">
+          <nav className="flex items-center gap-1 bg-[#FAF9F5]/95 backdrop-blur-xl border border-stone-300/80 px-2.5 py-1.5 rounded-full shadow-[0_12px_35px_rgba(28,25,23,0.12)]">
             {[
               { id: 'sessions', label: 'Plan', icon: Calendar },
               { id: 'timer', label: 'Timer', icon: Clock },
@@ -394,14 +389,14 @@ export default function App() {
                     playTickSound(soundEnabled);
                     setActiveTab(t.id as TabType);
                   }}
-                  className={`flex flex-col items-center justify-center px-3 py-1.5 rounded-full transition-all active:scale-95 cursor-pointer ${
+                  className={`flex flex-col items-center justify-center px-3.5 py-1.5 rounded-full transition-all active:scale-95 cursor-pointer ${
                     isActive
-                      ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-xs'
-                      : 'text-slate-500 hover:text-slate-800'
+                      ? 'bg-stone-900 text-white shadow-xs font-bold'
+                      : 'text-stone-500 hover:text-stone-900'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
-                  <span className="text-[10px] font-bold mt-0.5">{t.label}</span>
+                  <span className="text-[10px] mt-0.5">{t.label}</span>
                 </button>
               );
             })}

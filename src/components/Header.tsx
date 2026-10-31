@@ -47,8 +47,8 @@ export const Header: React.FC<HeaderProps> = ({
       setTimeout(() => {
         setQuoteIndex((prev) => (prev + 1) % MOTIVATIONAL_QUOTES.length);
         setFadeQuote(true);
-      }, 300);
-    }, 6000);
+      }, 350);
+    }, 6500);
     return () => clearInterval(interval);
   }, []);
 
@@ -90,8 +90,8 @@ export const Header: React.FC<HeaderProps> = ({
   const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
 
   const tabs = [
-    { id: 'sessions', label: 'Sessions', icon: Calendar },
-    { id: 'timer', label: 'Timer', icon: Clock },
+    { id: 'sessions', label: 'Study Sessions', icon: Calendar },
+    { id: 'timer', label: 'Focus Timer', icon: Clock },
     { id: 'recall', label: 'Formula Recall', icon: BookOpen },
     { id: 'errors', label: 'Error Log', icon: Sparkles },
     { id: 'blueprint', label: 'Exam Blueprint', icon: Award },
@@ -99,19 +99,19 @@ export const Header: React.FC<HeaderProps> = ({
   ] as const;
 
   return (
-    <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-indigo-100/80 shadow-[0_4px_20px_rgba(99,102,241,0.04)] transition-all">
+    <header className="sticky top-0 z-40 bg-[#FAF9F5]/90 backdrop-blur-xl border-b border-stone-200/80 shadow-[0_4px_24px_-4px_rgba(28,25,23,0.03)] transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Top bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between py-3.5 gap-3 border-b border-slate-100/80">
-          <div className="flex items-center gap-3">
-            {/* Circular Progress Ring */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between py-4 gap-3.5 border-b border-stone-200/60">
+          <div className="flex items-center gap-4">
+            {/* Circular Progress Ring with luxury warm gradient */}
             <div className="relative w-12 h-12 flex-shrink-0 flex items-center justify-center">
               <svg className="w-12 h-12 transform -rotate-90">
                 <circle
                   cx="24"
                   cy="24"
                   r={radius}
-                  stroke="#E0E7FF"
+                  stroke="#EBEAE5"
                   strokeWidth="3.5"
                   fill="transparent"
                 />
@@ -119,7 +119,7 @@ export const Header: React.FC<HeaderProps> = ({
                   cx="24"
                   cy="24"
                   r={radius}
-                  stroke="url(#progressGradient)"
+                  stroke="url(#warmProgressGradient)"
                   strokeWidth="3.5"
                   strokeDasharray={circumference}
                   strokeDashoffset={strokeDashoffset}
@@ -128,65 +128,65 @@ export const Header: React.FC<HeaderProps> = ({
                   fill="transparent"
                 />
                 <defs>
-                  <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#6366F1" />
-                    <stop offset="100%" stopColor="#14B8A6" />
+                  <linearGradient id="warmProgressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#4F46E5" />
+                    <stop offset="100%" stopColor="#0D9488" />
                   </linearGradient>
                 </defs>
               </svg>
               <div className="absolute inset-0 flex items-center justify-center flex-col">
-                <span className="text-[11px] font-bold text-slate-800 tabular-nums leading-none">
+                <span className="text-[11px] font-extrabold text-stone-800 tabular-nums leading-none">
                   {progressPercent}%
                 </span>
               </div>
             </div>
 
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold tracking-tight text-base sm:text-lg bg-gradient-to-r from-indigo-700 via-indigo-600 to-violet-700 bg-clip-text text-transparent">
-                  BUET · IPE 105
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <span className="font-extrabold tracking-tight text-base sm:text-lg text-stone-900">
+                  BUET <span className="font-light text-stone-400">·</span> IPE 105
                 </span>
-                <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-gradient-to-r from-indigo-50 to-violet-50 text-indigo-700 border border-indigo-200/60 shadow-xs">
+                <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-amber-50 text-amber-900 border border-amber-200/70 shadow-2xs">
                   4-Day Rescue Plan
                 </span>
-                <span className="hidden md:inline-flex px-2 py-0.5 text-[11px] font-semibold rounded-full bg-teal-50 text-teal-700 border border-teal-200/60">
+                <span className="hidden sm:inline-flex px-2.5 py-0.5 text-[11px] font-semibold rounded-full bg-stone-100 text-stone-700 border border-stone-200/80">
                   Target: 168+/210 (A+)
                 </span>
               </div>
 
-              {/* Rotating motivational quote */}
+              {/* Rotating motivational quote with spacious line height */}
               <p
-                className={`text-xs text-slate-500 font-medium tracking-tight mt-0.5 flex items-center gap-1.5 transition-opacity duration-300 ${
+                className={`text-xs text-stone-500 font-medium tracking-normal mt-1 flex items-center gap-2 transition-opacity duration-300 ${
                   fadeQuote ? 'opacity-100' : 'opacity-0'
                 }`}
               >
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
-                <span className="italic">"{MOTIVATIONAL_QUOTES[quoteIndex]}"</span>
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse flex-shrink-0"></span>
+                <span className="italic leading-relaxed">"{MOTIVATIONAL_QUOTES[quoteIndex]}"</span>
               </p>
             </div>
           </div>
 
-          {/* Exam Countdown & Quick Controls */}
+          {/* Exam Countdown & Actions */}
           <div className="flex items-center justify-between sm:justify-end gap-3 self-end sm:self-center w-full sm:w-auto">
-            {/* Live Countdown Clock */}
-            <div className="flex items-center gap-1.5 bg-gradient-to-r from-indigo-50/80 via-white to-violet-50/80 border border-indigo-100 px-3 py-1.5 rounded-2xl shadow-xs">
-              <Clock className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" />
-              <div className="flex items-center gap-1 text-xs">
-                <span className="text-slate-500 font-medium text-[11px]">Exam in:</span>
-                <div className="flex items-baseline gap-0.5 font-bold tabular-nums text-slate-800">
-                  <span className="bg-white px-1.5 py-0.5 rounded-md border border-indigo-100 text-indigo-700 shadow-2xs">
+            {/* Live Countdown in warm off-white badges */}
+            <div className="flex items-center gap-2 bg-[#F5F4EE] border border-stone-200/90 px-3.5 py-1.5 rounded-2xl shadow-2xs">
+              <Clock className="w-3.5 h-3.5 text-stone-500 flex-shrink-0" />
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className="text-stone-500 font-medium text-[11px]">Exam in:</span>
+                <div className="flex items-baseline gap-1 font-bold tabular-nums text-stone-800">
+                  <span className="bg-white px-2 py-0.5 rounded-lg border border-stone-200 text-stone-800 shadow-2xs font-mono text-[11px]">
                     {String(timeLeft.days).padStart(2, '0')}d
                   </span>
-                  <span className="text-slate-400">:</span>
-                  <span className="bg-white px-1.5 py-0.5 rounded-md border border-indigo-100 text-indigo-700 shadow-2xs">
+                  <span className="text-stone-400 font-mono">:</span>
+                  <span className="bg-white px-2 py-0.5 rounded-lg border border-stone-200 text-stone-800 shadow-2xs font-mono text-[11px]">
                     {String(timeLeft.hours).padStart(2, '0')}h
                   </span>
-                  <span className="text-slate-400">:</span>
-                  <span className="bg-white px-1.5 py-0.5 rounded-md border border-indigo-100 text-indigo-700 shadow-2xs">
+                  <span className="text-stone-400 font-mono">:</span>
+                  <span className="bg-white px-2 py-0.5 rounded-lg border border-stone-200 text-stone-800 shadow-2xs font-mono text-[11px]">
                     {String(timeLeft.minutes).padStart(2, '0')}m
                   </span>
-                  <span className="text-slate-400 hidden xs:inline">:</span>
-                  <span className="bg-white px-1.5 py-0.5 rounded-md border border-indigo-100 text-indigo-700 shadow-2xs hidden xs:inline">
+                  <span className="text-stone-400 font-mono hidden xs:inline">:</span>
+                  <span className="bg-white px-2 py-0.5 rounded-lg border border-stone-200 text-stone-800 shadow-2xs font-mono text-[11px] hidden xs:inline">
                     {String(timeLeft.seconds).padStart(2, '0')}s
                   </span>
                 </div>
@@ -194,17 +194,17 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
 
             {/* Quick Actions */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <button
                 onClick={() => {
                   playTickSound(soundEnabled);
                   onToggleSound();
                 }}
                 title={soundEnabled ? 'Mute study sounds' : 'Enable study sounds'}
-                className={`p-2 rounded-xl text-xs font-medium transition-all active:scale-95 ${
+                className={`p-2 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
                   soundEnabled
-                    ? 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200/60'
-                    : 'bg-slate-50 text-slate-400 hover:bg-slate-100 border border-slate-200/60'
+                    ? 'bg-stone-100 text-stone-800 hover:bg-stone-200 border border-stone-300/80 shadow-2xs'
+                    : 'bg-stone-100 text-stone-400 hover:bg-stone-200 border border-stone-200'
                 }`}
               >
                 {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
@@ -216,7 +216,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onExportData();
                 }}
                 title="Backup progress (JSON)"
-                className="p-2 rounded-xl text-xs font-medium text-slate-600 hover:text-indigo-600 bg-white hover:bg-indigo-50 border border-slate-200/60 hover:border-indigo-200/60 transition-all active:scale-95 shadow-2xs"
+                className="p-2 rounded-xl text-xs font-medium text-stone-700 hover:text-stone-900 bg-white hover:bg-stone-50 border border-stone-200/90 transition-all active:scale-95 shadow-2xs cursor-pointer"
               >
                 <Download className="w-4 h-4" />
               </button>
@@ -227,7 +227,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onImportData();
                 }}
                 title="Restore progress from JSON"
-                className="p-2 rounded-xl text-xs font-medium text-slate-600 hover:text-indigo-600 bg-white hover:bg-indigo-50 border border-slate-200/60 hover:border-indigo-200/60 transition-all active:scale-95 shadow-2xs"
+                className="p-2 rounded-xl text-xs font-medium text-stone-700 hover:text-stone-900 bg-white hover:bg-stone-50 border border-stone-200/90 transition-all active:scale-95 shadow-2xs cursor-pointer"
               >
                 <Upload className="w-4 h-4" />
               </button>
@@ -238,7 +238,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onOpenResetModal();
                 }}
                 title="Reset progress"
-                className="p-2 rounded-xl text-xs font-medium text-rose-500 hover:text-rose-600 bg-rose-50/50 hover:bg-rose-100/70 border border-rose-200/60 transition-all active:scale-95 shadow-2xs"
+                className="p-2 rounded-xl text-xs font-medium text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100/80 border border-rose-200/70 transition-all active:scale-95 shadow-2xs cursor-pointer"
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
@@ -246,9 +246,9 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Tab Switcher - iOS Segmented Control Style with Sliding Pill */}
+        {/* Tab Switcher with sliding indicator */}
         <div className="py-2.5 overflow-x-auto scrollbar-none">
-          <nav className="inline-flex p-1 bg-slate-100/80 rounded-2xl border border-indigo-100/50 relative">
+          <nav className="inline-flex p-1.5 bg-[#F0EFE9] rounded-2xl border border-stone-200/80 gap-1">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -259,16 +259,16 @@ export const Header: React.FC<HeaderProps> = ({
                     playTickSound(soundEnabled);
                     onTabChange(tab.id);
                   }}
-                  className={`relative flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
+                  className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
                     isActive
-                      ? 'bg-white text-indigo-700 shadow-sm shadow-indigo-100/80 scale-[1.02]'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/40'
+                      ? 'bg-white text-stone-900 shadow-sm border border-stone-200/70 scale-[1.01]'
+                      : 'text-stone-600 hover:text-stone-900 hover:bg-white/50'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-amber-600' : 'text-stone-400'}`} />
                   <span>{tab.label}</span>
                   {tab.id === 'sessions' && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200/40">
+                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-stone-100 text-stone-700 border border-stone-200">
                       {completedSessionsCount}/{totalSessionsCount}
                     </span>
                   )}

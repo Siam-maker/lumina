@@ -11,6 +11,9 @@ import {
   ListTodo,
   ExternalLink,
   Target,
+  Sparkles,
+  Layers,
+  ArrowRight,
 } from 'lucide-react';
 import {
   DAYS_DATA,
@@ -48,6 +51,7 @@ export const SessionsView: React.FC<SessionsViewProps> = ({
   const [selectedDayId, setSelectedDayId] = useState<string>('day-0');
   const [filterMode, setFilterMode] = useState<'all' | 'incomplete' | 'weak' | 'tierA'>('all');
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
+  const [activeCardTab, setActiveCardTab] = useState<Record<string, 'playbook' | 'routine' | 'formulas' | 'traps'>>({});
   const [justCheckedId, setJustCheckedId] = useState<string | null>(null);
 
   const selectedDay = DAYS_DATA.find((d) => d.id === selectedDayId) || DAYS_DATA[0];
@@ -70,6 +74,15 @@ export const SessionsView: React.FC<SessionsViewProps> = ({
   const toggleExpand = (id: string) => {
     playTickSound(soundEnabled);
     setExpandedCards((prev) => ({ ...prev, [id]: !prev[id] }));
+    if (!activeCardTab[id]) {
+      setActiveCardTab((prev) => ({ ...prev, [id]: 'playbook' }));
+    }
+  };
+
+  const setCardTab = (sessionId: string, tab: 'playbook' | 'routine' | 'formulas' | 'traps', e: React.MouseEvent) => {
+    e.stopPropagation();
+    playTickSound(soundEnabled);
+    setActiveCardTab((prev) => ({ ...prev, [sessionId]: tab }));
   };
 
   const handleSessionCheck = (session: SessionBlock, e: React.MouseEvent) => {
@@ -85,12 +98,11 @@ export const SessionsView: React.FC<SessionsViewProps> = ({
       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
       const originX = rect.left + rect.width / 2;
       const originY = rect.top + rect.height / 2;
-      launchConfetti(originX, originY, 22);
+      launchConfetti(originX, originY, 24);
 
-      // Check if whole day completed
       if (dayCompletedCount + 1 === dayTotalCount) {
         setTimeout(() => {
-          launchConfetti(window.innerWidth / 2, window.innerHeight / 3, 75);
+          launchConfetti(window.innerWidth / 2, window.innerHeight / 3, 80);
         }, 300);
       }
     } else {
@@ -102,19 +114,19 @@ export const SessionsView: React.FC<SessionsViewProps> = ({
     switch (tier) {
       case 'A':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-xs shadow-indigo-200">
-            Tier A · Must
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-stone-900 text-stone-100 shadow-2xs">
+            Tier A · High Yield
           </span>
         );
       case 'B':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-teal-50 text-teal-700 border border-teal-200">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-900 border border-amber-200/80">
             Tier B · Important
           </span>
         );
       case 'C':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-stone-100 text-stone-600 border border-stone-200">
             Tier C · Quick Theory
           </span>
         );
@@ -122,9 +134,9 @@ export const SessionsView: React.FC<SessionsViewProps> = ({
   };
 
   return (
-    <div className="space-y-6 pb-20">
-      {/* Day Selector Chips */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+    <div className="space-y-8 pb-24">
+      {/* Day Selector Chips with warm off-white styling */}
+      <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
         {DAYS_DATA.map((day) => {
           const isSelected = day.id === selectedDayId;
           const daySessionsList = SESSIONS_DATA.filter((s) => s.dayId === day.id);
@@ -139,29 +151,25 @@ export const SessionsView: React.FC<SessionsViewProps> = ({
                 playTickSound(soundEnabled);
                 setSelectedDayId(day.id);
               }}
-              className={`flex-shrink-0 px-3.5 py-2 rounded-2xl border transition-all duration-200 text-left cursor-pointer ${
+              className={`flex-shrink-0 px-4 py-2.5 rounded-2xl border transition-all duration-200 text-left cursor-pointer ${
                 isSelected
-                  ? `bg-white shadow-[0_8px_20px_rgba(99,102,241,0.12)] border-indigo-400 ring-2 ring-indigo-300/40 scale-[1.02]`
-                  : `bg-white/70 hover:bg-white border-slate-200/80 text-slate-600 shadow-2xs`
+                  ? 'bg-white shadow-[0_8px_25px_-5px_rgba(28,25,23,0.08)] border-stone-400 ring-2 ring-stone-300/60 scale-[1.02]'
+                  : 'bg-[#FDFCFA] hover:bg-white border-stone-200/80 text-stone-600 shadow-2xs'
               }`}
             >
-              <div className="flex items-center justify-between gap-3">
-                <span
-                  className={`text-xs font-bold ${
-                    isSelected ? 'text-indigo-900' : 'text-slate-700'
-                  }`}
-                >
+              <div className="flex items-center justify-between gap-4">
+                <span className={`text-xs font-extrabold ${isSelected ? 'text-stone-900' : 'text-stone-700'}`}>
                   {day.dayName}
                 </span>
                 {isDoneAll ? (
-                  <CheckCircle2 className="w-3.5 h-3.5 text-teal-500 flex-shrink-0" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-teal-600 flex-shrink-0" />
                 ) : (
-                  <span className="text-[10px] tabular-nums font-semibold text-slate-400">
+                  <span className="text-[11px] tabular-nums font-semibold text-stone-400">
                     {done}/{total}
                   </span>
                 )}
               </div>
-              <div className="text-[11px] text-slate-500 font-medium truncate max-w-[130px] mt-0.5">
+              <div className="text-xs text-stone-500 font-medium truncate max-w-[140px] mt-1">
                 {day.dateString}
               </div>
             </button>
@@ -169,60 +177,61 @@ export const SessionsView: React.FC<SessionsViewProps> = ({
         })}
       </div>
 
-      {/* Day Overview Banner Card */}
-      <div className="relative overflow-hidden bg-white/80 backdrop-blur-md rounded-3xl border border-indigo-100 p-5 shadow-[0_8px_30px_rgba(79,70,229,0.06)]">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${selectedDay.colorTheme.badgeBg}`}>
+      {/* Day Overview Banner Card with Generous Breathing Room */}
+      <div className="relative overflow-hidden bg-white/90 backdrop-blur-md rounded-3xl border border-stone-200/90 p-6 sm:p-7 shadow-[0_10px_35px_-5px_rgba(28,25,23,0.04)] space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-stone-900 text-white shadow-2xs">
                 {selectedDay.dayName} · {selectedDay.dateString}
               </span>
-              <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
-                Target: {selectedDay.targetStudyHours}
+              <span className="text-xs font-semibold text-stone-600 bg-[#F4F3ED] px-3 py-1 rounded-full border border-stone-200">
+                Target Study: {selectedDay.targetStudyHours}
               </span>
             </div>
-            <h2 className="text-xl font-extrabold text-slate-800 tracking-tight">
+            <h2 className="text-2xl font-black text-stone-900 tracking-tight">
               {selectedDay.themeTitle}
             </h2>
-            <p className="text-xs text-slate-600 flex items-center gap-1.5 pt-0.5">
-              <Target className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" />
+            <p className="text-xs sm:text-sm text-stone-600 flex items-start gap-2 pt-1 leading-relaxed max-w-2xl">
+              <Target className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
               <span>
-                <strong className="text-slate-700">Night Output Target:</strong> {selectedDay.outputByNight}
+                <strong className="text-stone-800 font-bold">Night Output Goal:</strong>{' '}
+                {selectedDay.outputByNight}
               </span>
             </p>
           </div>
 
-          {/* Progress Bar & Stat */}
-          <div className="flex items-center gap-3 bg-slate-50/80 border border-slate-200/60 p-3 rounded-2xl min-w-[210px]">
+          {/* Progress Bar & Stat in Warm Box */}
+          <div className="flex items-center gap-4 bg-[#F8F7F3] border border-stone-200/90 p-4 rounded-2xl min-w-[240px] shadow-2xs">
             <div className="flex-1">
-              <div className="flex justify-between text-xs mb-1">
-                <span className="font-semibold text-slate-600">Day Progress</span>
-                <span className="font-bold tabular-nums text-indigo-600">{dayPercent}%</span>
+              <div className="flex justify-between text-xs mb-1.5">
+                <span className="font-bold text-stone-600">Day Completion</span>
+                <span className="font-extrabold tabular-nums text-stone-900">{dayPercent}%</span>
               </div>
-              <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+              <div className="w-full bg-stone-200 h-2.5 rounded-full overflow-hidden">
                 <div
-                  className={`h-full bg-gradient-to-r ${selectedDay.colorTheme.accentGrad} transition-all duration-500 rounded-full`}
+                  className="h-full bg-gradient-to-r from-stone-800 to-amber-600 transition-all duration-500 rounded-full"
                   style={{ width: `${dayPercent}%` }}
                 />
               </div>
             </div>
-            <div className="text-right">
-              <span className="text-xs font-bold text-slate-700 tabular-nums">
+            <div className="text-right pl-2 border-l border-stone-200">
+              <span className="text-sm font-extrabold text-stone-900 tabular-nums">
                 {dayCompletedCount}/{dayTotalCount}
               </span>
-              <div className="text-[10px] text-slate-400">done</div>
+              <div className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider">done</div>
             </div>
           </div>
         </div>
 
-        {/* Filter Chips inside banner */}
-        <div className="mt-4 pt-3.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5 bg-slate-100/70 p-1 rounded-2xl text-xs font-semibold">
+        {/* Filter Controls with Spacious Sliding Look */}
+        <div className="pt-4 border-t border-stone-200/60 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-1.5 bg-[#EFECE6] p-1.5 rounded-2xl text-xs font-semibold overflow-x-auto">
             {(
               [
                 { id: 'all', label: 'All Sessions' },
-                { id: 'incomplete', label: 'Remaining' },
-                { id: 'weak', label: 'Weak Starred' },
+                { id: 'incomplete', label: 'Remaining To-Do' },
+                { id: 'weak', label: 'Weak Topics' },
                 { id: 'tierA', label: 'Tier A Only' },
               ] as const
             ).map((filter) => (
@@ -232,10 +241,10 @@ export const SessionsView: React.FC<SessionsViewProps> = ({
                   playTickSound(soundEnabled);
                   setFilterMode(filter.id);
                 }}
-                className={`px-3 py-1 rounded-xl transition-all cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer whitespace-nowrap ${
                   filterMode === filter.id
-                    ? 'bg-white text-indigo-700 shadow-2xs font-bold'
-                    : 'text-slate-500 hover:text-slate-800'
+                    ? 'bg-white text-stone-900 shadow-2xs font-extrabold'
+                    : 'text-stone-600 hover:text-stone-900'
                 }`}
               >
                 {filter.label}
@@ -243,28 +252,28 @@ export const SessionsView: React.FC<SessionsViewProps> = ({
             ))}
           </div>
 
-          <div className="text-xs text-slate-500 font-medium">
-            Showing <strong className="text-slate-700">{filteredSessions.length}</strong> of {dayTotalCount} blocks
+          <div className="text-xs text-stone-500 font-medium">
+            Displaying <strong className="text-stone-800 font-bold">{filteredSessions.length}</strong> of {dayTotalCount} study blocks
           </div>
         </div>
       </div>
 
-      {/* Session Blocks List */}
-      <div className="space-y-4">
+      {/* Session Blocks List with Uncluttered, De-Congested Spacing */}
+      <div className="space-y-5">
         {filteredSessions.length === 0 ? (
-          <div className="bg-white/70 backdrop-blur-md rounded-3xl p-10 text-center border border-indigo-100/80 shadow-sm">
-            <div className="w-12 h-12 mx-auto mb-3 text-indigo-300">
+          <div className="bg-white/90 backdrop-blur-md rounded-3xl p-12 text-center border border-stone-200 shadow-sm space-y-3">
+            <div className="w-12 h-12 mx-auto text-stone-400">
               <CheckCircle2 className="w-12 h-12 stroke-[1.5]" />
             </div>
-            <h3 className="text-base font-bold text-slate-700">No sessions match this filter</h3>
-            <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+            <h3 className="text-base font-bold text-stone-800">No sessions match this filter</h3>
+            <p className="text-xs text-stone-500 max-w-sm mx-auto leading-relaxed">
               {filterMode === 'incomplete'
-                ? 'All sessions for this day are finished! Fantastic job.'
+                ? 'All sessions for this day are finished! Fantastic progress.'
                 : 'Try switching filters or selecting another day.'}
             </p>
             <button
               onClick={() => setFilterMode('all')}
-              className="mt-4 px-4 py-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors cursor-pointer"
+              className="px-4 py-2 text-xs font-bold text-stone-800 bg-stone-100 hover:bg-stone-200 rounded-xl transition-colors cursor-pointer"
             >
               Show all sessions
             </button>
@@ -275,34 +284,35 @@ export const SessionsView: React.FC<SessionsViewProps> = ({
             const isWeak = !!weakSessions[session.id];
             const isExpanded = !!expandedCards[session.id];
             const isPopping = justCheckedId === session.id;
+            const currentTab = activeCardTab[session.id] || 'playbook';
 
             return (
               <div
                 key={session.id}
-                style={{ animationDelay: `${index * 60}ms` }}
-                className={`group relative bg-white/75 backdrop-blur-md rounded-2xl md:rounded-3xl border transition-all duration-300 ${
+                style={{ animationDelay: `${index * 50}ms` }}
+                className={`group relative bg-white/90 backdrop-blur-md rounded-3xl border transition-all duration-300 ${
                   isCompleted
-                    ? 'border-teal-200/80 bg-teal-50/20 shadow-[0_4px_20px_rgba(20,184,166,0.06)]'
+                    ? 'border-teal-300/80 bg-teal-50/15 shadow-[0_4px_24px_-4px_rgba(13,148,136,0.06)]'
                     : isWeak
-                    ? 'border-amber-200/90 bg-amber-50/20 shadow-[0_4px_20px_rgba(245,158,11,0.06)]'
-                    : 'border-indigo-500/12 shadow-[0_8px_30px_rgba(79,70,229,0.06)] hover:border-indigo-300/60'
-                } ${isPopping ? 'animate-check-pop ring-2 ring-teal-300' : ''}`}
+                    ? 'border-amber-300/80 bg-amber-50/20 shadow-[0_4px_24px_-4px_rgba(217,119,6,0.06)]'
+                    : 'border-stone-200/90 shadow-[0_6px_25px_-5px_rgba(28,25,23,0.04)] hover:border-stone-300'
+                } ${isPopping ? 'animate-check-pop ring-2 ring-teal-400' : ''}`}
               >
-                {/* Header row / Main Summary */}
+                {/* Header row / Main Summary with Relaxed Padding */}
                 <div
                   onClick={() => toggleExpand(session.id)}
-                  className="p-4 sm:p-5 flex items-start sm:items-center justify-between gap-4 cursor-pointer select-none"
+                  className="p-5 sm:p-6 flex items-start sm:items-center justify-between gap-4 cursor-pointer select-none"
                 >
-                  <div className="flex items-start sm:items-center gap-3.5 flex-1 min-w-0">
-                    {/* Animated Checkbox */}
+                  <div className="flex items-start sm:items-center gap-4 flex-1 min-w-0">
+                    {/* Animated Checkbox Button */}
                     <button
                       type="button"
                       onClick={(e) => handleSessionCheck(session, e)}
                       title={isCompleted ? 'Mark incomplete' : 'Mark complete'}
-                      className={`relative w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200 mt-0.5 sm:mt-0 cursor-pointer ${
+                      className={`relative w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200 mt-0.5 sm:mt-0 cursor-pointer ${
                         isCompleted
-                          ? 'bg-teal-500 text-white shadow-sm shadow-teal-200 ring-2 ring-teal-300/50'
-                          : 'bg-white border-2 border-slate-300 hover:border-indigo-400 hover:bg-indigo-50/30'
+                          ? 'bg-teal-600 text-white shadow-sm ring-2 ring-teal-300/50'
+                          : 'bg-[#FAF9F5] border-2 border-stone-300 hover:border-stone-500 hover:bg-stone-100'
                       }`}
                     >
                       {isCompleted && (
@@ -311,41 +321,41 @@ export const SessionsView: React.FC<SessionsViewProps> = ({
                     </button>
 
                     {/* Content text */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <span className="text-xs font-bold text-slate-800 bg-slate-100/90 px-2 py-0.5 rounded-lg tabular-nums">
+                    <div className="flex-1 min-w-0 space-y-1.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-mono font-bold text-stone-800 bg-[#EFECE6] px-2.5 py-0.5 rounded-lg tabular-nums">
                           {session.timeSlot}
                         </span>
-                        <span className="text-xs font-semibold text-slate-500">
+                        <span className="text-xs font-bold text-stone-600 bg-stone-100 px-2 py-0.5 rounded-md">
                           {session.blockNumber}
                         </span>
                         {getTierBadge(session.tier)}
                       </div>
 
                       <h3
-                        className={`text-sm sm:text-base font-bold transition-colors ${
-                          isCompleted ? 'text-slate-500 line-through' : 'text-slate-800'
+                        className={`text-base sm:text-lg font-bold tracking-tight transition-colors ${
+                          isCompleted ? 'text-stone-400 line-through' : 'text-stone-900'
                         }`}
                       >
                         {session.title}
                       </h3>
 
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 mt-1">
-                        <span className="flex items-center gap-1 font-medium">
-                          <BookOpen className="w-3 h-3 text-indigo-400" />
-                          <span className="truncate max-w-[280px]">{session.garrisonRef}</span>
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-500 font-medium">
+                        <span className="flex items-center gap-1.5">
+                          <BookOpen className="w-3.5 h-3.5 text-stone-400 flex-shrink-0" />
+                          <span className="truncate max-w-[340px]">{session.garrisonRef}</span>
                         </span>
-                        <span className="flex items-center gap-1 font-medium">
-                          <Clock className="w-3 h-3 text-slate-400" />
-                          <span>{session.durationMinutes} min</span>
+                        <span className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5 text-stone-400 flex-shrink-0" />
+                          <span>{session.durationMinutes} minutes</span>
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Actions on right */}
-                  <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-                    {/* Weak Topic Flag Button */}
+                  {/* Right Actions */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {/* Star Weak Flag Button */}
                     <button
                       type="button"
                       onClick={(e) => {
@@ -356,8 +366,8 @@ export const SessionsView: React.FC<SessionsViewProps> = ({
                       title={isWeak ? 'Remove weak mark' : 'Flag as weak topic'}
                       className={`p-2 rounded-xl transition-all cursor-pointer active:scale-90 ${
                         isWeak
-                          ? 'bg-amber-100 text-amber-600 ring-2 ring-amber-300/70 animate-star-wiggle'
-                          : 'text-slate-300 hover:text-amber-500 hover:bg-amber-50'
+                          ? 'bg-amber-100 text-amber-700 ring-2 ring-amber-300/70 animate-star-wiggle'
+                          : 'text-stone-300 hover:text-amber-600 hover:bg-amber-50'
                       }`}
                     >
                       <Star className={`w-4 h-4 ${isWeak ? 'fill-amber-500 text-amber-500' : ''}`} />
@@ -371,41 +381,40 @@ export const SessionsView: React.FC<SessionsViewProps> = ({
                         playTickSound(soundEnabled);
                         onStartSessionTimer(session);
                       }}
-                      title="Start timer for this block"
-                      className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200/60 transition-all active:scale-95 cursor-pointer"
+                      title="Prime focus timer for this block"
+                      className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-stone-800 bg-[#EFECE6] hover:bg-[#E5E2DC] border border-stone-200 transition-all active:scale-95 cursor-pointer shadow-2xs"
                     >
-                      <Play className="w-3 h-3 fill-indigo-600" />
+                      <Play className="w-3 h-3 fill-stone-800" />
                       <span>Timer</span>
                     </button>
 
-                    {/* Chevron toggle */}
+                    {/* Chevron toggle button */}
                     <button
                       type="button"
-                      className="p-1.5 text-slate-400 group-hover:text-slate-600 transition-transform duration-200"
+                      className="p-1.5 text-stone-400 hover:text-stone-600 transition-transform duration-200 cursor-pointer"
                     >
                       <ChevronDown
                         className={`w-4 h-4 transition-transform duration-300 ${
-                          isExpanded ? 'transform rotate-180 text-indigo-600' : ''
+                          isExpanded ? 'transform rotate-180 text-stone-800' : ''
                         }`}
                       />
                     </button>
                   </div>
                 </div>
 
-                {/* Practice Question Chips preview under header */}
+                {/* Practice Questions Preview Row with Comfortable Spacing */}
                 {session.practiceQuestions.length > 0 && (
-                  <div className="px-5 pb-3.5 pt-0 flex flex-wrap items-center gap-1.5">
-                    <span className="text-[11px] font-semibold text-slate-400 mr-1 flex items-center gap-1">
-                      <ListTodo className="w-3 h-3" /> Problems:
+                  <div className="px-6 pb-4 pt-0 flex flex-wrap items-center gap-2 border-t border-stone-100/80 pt-3">
+                    <span className="text-xs font-bold text-stone-400 mr-1 flex items-center gap-1">
+                      <ListTodo className="w-3.5 h-3.5" /> Practice List:
                     </span>
                     {session.practiceQuestions.map((q: QuestionRef) => {
                       const isSolved = !!solvedQuestions[q.id];
                       return (
                         <div
                           key={q.id}
-                          className="inline-flex items-center gap-1 bg-white/90 border border-slate-200/90 rounded-lg p-0.5 shadow-2xs hover:border-indigo-300 transition-all"
+                          className="inline-flex items-center gap-1.5 bg-[#F9F8F4] border border-stone-200/90 rounded-xl px-2 py-1 shadow-2xs hover:border-stone-400 transition-all"
                         >
-                          {/* Toggle question solved */}
                           <button
                             type="button"
                             onClick={(e) => {
@@ -413,29 +422,28 @@ export const SessionsView: React.FC<SessionsViewProps> = ({
                               playTickSound(soundEnabled);
                               onToggleQuestion(q.id);
                             }}
-                            className={`px-2 py-0.5 rounded-md text-[11px] font-bold transition-all active:scale-95 cursor-pointer flex items-center gap-1 ${
+                            className={`px-2 py-0.5 rounded-lg text-xs font-bold transition-all active:scale-95 cursor-pointer flex items-center gap-1 ${
                               isSolved
-                                ? 'bg-teal-500 text-white'
-                                : 'bg-slate-50 text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'
+                                ? 'bg-teal-600 text-white'
+                                : 'bg-white text-stone-800 hover:bg-stone-100'
                             }`}
                           >
-                            {isSolved && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                            {isSolved && <Check className="w-3 h-3 stroke-[3]" />}
                             <span>{q.id}</span>
-                            {q.isStar && <span className="text-amber-300 text-[10px]">★</span>}
+                            {q.isStar && <span className="text-amber-500 font-bold">★</span>}
                           </button>
 
-                          {/* Inspect solution */}
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
                               onSelectQuestion(q.id);
                             }}
-                            title={`Inspect ${q.id} (${q.title}, p${q.pdfPage})`}
-                            className="px-1 text-[10px] text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-0.5"
+                            title={`Inspect worked model answer for ${q.id} (${q.title})`}
+                            className="text-[11px] font-semibold text-stone-600 hover:text-stone-900 flex items-center gap-0.5 cursor-pointer"
                           >
                             <span>p.{q.pdfPage}</span>
-                            <ExternalLink className="w-2.5 h-2.5" />
+                            <ExternalLink className="w-3 h-3 text-stone-400" />
                           </button>
                         </div>
                       );
@@ -443,64 +451,160 @@ export const SessionsView: React.FC<SessionsViewProps> = ({
                   </div>
                 )}
 
-                {/* Expanded Card Details */}
+                {/* Expanded Card Drawer with Clean Sectioned Tabs */}
                 {isExpanded && (
-                  <div className="px-5 pb-5 pt-3 border-t border-slate-100 text-xs space-y-4">
-                    {/* Instructions / Ki korbe */}
-                    <div className="bg-slate-50/80 rounded-2xl p-3.5 border border-slate-200/60">
-                      <h4 className="font-bold text-slate-800 flex items-center gap-1.5 mb-1 text-[13px]">
-                        <BookOpen className="w-3.5 h-3.5 text-indigo-500" />
-                        <span>Execution Playbook (Kotha theke & ki bhabe)</span>
-                      </h4>
-                      <p className="text-slate-600 leading-relaxed">{session.description}</p>
+                  <div className="px-6 pb-6 pt-4 border-t border-stone-200/70 space-y-5 animate-in fade-in duration-200">
+                    {/* Drawer Sub-tabs */}
+                    <div className="flex items-center gap-1.5 bg-[#EFECE6] p-1 rounded-2xl overflow-x-auto text-xs font-semibold">
+                      <button
+                        onClick={(e) => setCardTab(session.id, 'playbook', e)}
+                        className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                          currentTab === 'playbook'
+                            ? 'bg-white text-stone-900 shadow-2xs font-bold'
+                            : 'text-stone-600 hover:text-stone-900'
+                        }`}
+                      >
+                        Playbook & Guide
+                      </button>
+
+                      {session.standardBlockShape && (
+                        <button
+                          onClick={(e) => setCardTab(session.id, 'routine', e)}
+                          className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                            currentTab === 'routine'
+                              ? 'bg-white text-stone-900 shadow-2xs font-bold'
+                              : 'text-stone-600 hover:text-stone-900'
+                          }`}
+                        >
+                          2-Hour Block Architecture
+                        </button>
+                      )}
+
+                      {session.formulas.length > 0 && (
+                        <button
+                          onClick={(e) => setCardTab(session.id, 'formulas', e)}
+                          className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                            currentTab === 'formulas'
+                              ? 'bg-white text-stone-900 shadow-2xs font-bold'
+                              : 'text-stone-600 hover:text-stone-900'
+                          }`}
+                        >
+                          Formulas ({session.formulas.length})
+                        </button>
+                      )}
+
+                      {session.commonTraps.length > 0 && (
+                        <button
+                          onClick={(e) => setCardTab(session.id, 'traps', e)}
+                          className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                            currentTab === 'traps'
+                              ? 'bg-white text-rose-800 shadow-2xs font-bold'
+                              : 'text-stone-600 hover:text-stone-900'
+                          }`}
+                        >
+                          Traps ({session.commonTraps.length})
+                        </button>
+                      )}
                     </div>
 
-                    {/* Standard 2-Hour Study Block Breakdown if applicable */}
-                    {session.standardBlockShape && (
-                      <div className="bg-indigo-50/50 rounded-2xl p-3.5 border border-indigo-100">
-                        <h4 className="font-bold text-indigo-900 mb-2 flex items-center justify-between">
-                          <span>Standard 2-Hour Study Block Architecture:</span>
-                          <span className="text-[10px] px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded-md">
-                            Formula for Mastery
+                    {/* Tab 1: Playbook */}
+                    {currentTab === 'playbook' && (
+                      <div className="bg-[#FAF9F5] rounded-2xl p-5 border border-stone-200/80 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="w-4 h-4 text-stone-600" />
+                          <h4 className="text-sm font-bold text-stone-900">
+                            Execution Recipe (Kotha theke porbo & ki korbo)
+                          </h4>
+                        </div>
+                        <p className="text-xs sm:text-sm text-stone-700 leading-relaxed">
+                          {session.description}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Tab 2: 2-Hour Study Block Architecture */}
+                    {currentTab === 'routine' && session.standardBlockShape && (
+                      <div className="bg-[#FAF9F5] rounded-2xl p-5 border border-stone-200/80 space-y-3.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Layers className="w-4 h-4 text-stone-600" />
+                            <h4 className="text-sm font-bold text-stone-900">
+                              2-Hour Block Discipline (Recipe-First Loop)
+                            </h4>
+                          </div>
+                          <span className="text-[11px] font-bold text-stone-500 bg-stone-100 px-2.5 py-0.5 rounded-full">
+                            120 min Total
                           </span>
-                        </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 text-[11px]">
-                          <div className="bg-white/80 p-2 rounded-xl border border-indigo-100/70">
-                            <span className="font-bold text-indigo-600 block">0–20 min</span>
-                            <span className="text-slate-600">Concept skim: summary & input-output recipe.</span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-3 text-xs">
+                          <div className="bg-white p-3.5 rounded-xl border border-stone-200/90 shadow-2xs space-y-1">
+                            <span className="font-extrabold text-stone-900 block font-mono text-[11px]">
+                              0–20 min
+                            </span>
+                            <span className="font-bold text-stone-800 block text-[12px]">Concept Skim</span>
+                            <p className="text-stone-500 text-[11px] leading-relaxed">
+                              Garrison exhibit & shortest worked answer. Understand input, step, output.
+                            </p>
                           </div>
-                          <div className="bg-white/80 p-2 rounded-xl border border-indigo-100/70">
-                            <span className="font-bold text-indigo-600 block">20–30 min</span>
-                            <span className="text-slate-600">Formula sheet: handwritten with 1-line example.</span>
+
+                          <div className="bg-white p-3.5 rounded-xl border border-stone-200/90 shadow-2xs space-y-1">
+                            <span className="font-extrabold text-stone-900 block font-mono text-[11px]">
+                              20–30 min
+                            </span>
+                            <span className="font-bold text-stone-800 block text-[12px]">Formula Write</span>
+                            <p className="text-stone-500 text-[11px] leading-relaxed">
+                              Handwrite formulas on paper with a 1-line mini example.
+                            </p>
                           </div>
-                          <div className="bg-white/80 p-2 rounded-xl border border-indigo-100/70">
-                            <span className="font-bold text-indigo-600 block">30–55 min</span>
-                            <span className="text-slate-600">Guided problem: cover answer, step line match.</span>
+
+                          <div className="bg-white p-3.5 rounded-xl border border-stone-200/90 shadow-2xs space-y-1">
+                            <span className="font-extrabold text-stone-900 block font-mono text-[11px]">
+                              30–55 min
+                            </span>
+                            <span className="font-bold text-stone-800 block text-[12px]">Guided Solve</span>
+                            <p className="text-stone-500 text-[11px] leading-relaxed">
+                              Cover solution, solve problem yourself, match line by line.
+                            </p>
                           </div>
-                          <div className="bg-white/80 p-2 rounded-xl border border-indigo-100/70">
-                            <span className="font-bold text-indigo-600 block">55–105 min</span>
-                            <span className="text-slate-600">Blind problems: 2 problems under timer (no peek!).</span>
+
+                          <div className="bg-white p-3.5 rounded-xl border border-stone-200/90 shadow-2xs space-y-1">
+                            <span className="font-extrabold text-stone-900 block font-mono text-[11px]">
+                              55–105 min
+                            </span>
+                            <span className="font-bold text-stone-800 block text-[12px]">Blind Practice</span>
+                            <p className="text-stone-500 text-[11px] leading-relaxed">
+                              2 problems with timer (20-25m each). Absolutely zero peeking!
+                            </p>
                           </div>
-                          <div className="bg-white/80 p-2 rounded-xl border border-indigo-100/70">
-                            <span className="font-bold text-indigo-600 block">105–120 min</span>
-                            <span className="text-slate-600">Check & Error Log: 1-line log + oral recall.</span>
+
+                          <div className="bg-white p-3.5 rounded-xl border border-stone-200/90 shadow-2xs space-y-1">
+                            <span className="font-extrabold text-stone-900 block font-mono text-[11px]">
+                              105–120 min
+                            </span>
+                            <span className="font-bold text-stone-800 block text-[12px]">Check & Error Log</span>
+                            <p className="text-stone-500 text-[11px] leading-relaxed">
+                              1-line error log entry. Recite topic recipe in 5 lines verbally.
+                            </p>
                           </div>
                         </div>
                       </div>
                     )}
 
-                    {/* Formulas To Memorize */}
-                    {session.formulas.length > 0 && (
-                      <div className="bg-white/90 rounded-2xl p-3.5 border border-slate-200/80 shadow-2xs">
-                        <h4 className="font-bold text-slate-800 mb-1.5 flex items-center gap-1.5 text-[12px]">
-                          <span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span>
-                          <span>Formulas to Commit to Muscle Memory:</span>
-                        </h4>
-                        <div className="space-y-1">
+                    {/* Tab 3: Formulas */}
+                    {currentTab === 'formulas' && session.formulas.length > 0 && (
+                      <div className="bg-[#FAF9F5] rounded-2xl p-5 border border-stone-200/80 space-y-2.5">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                          <h4 className="text-sm font-bold text-stone-900">
+                            Key Formulas to Master for this Block
+                          </h4>
+                        </div>
+                        <div className="space-y-2">
                           {session.formulas.map((f, i) => (
                             <div
                               key={i}
-                              className="font-mono text-[11px] bg-slate-50 px-2.5 py-1 rounded-lg text-slate-800 border border-slate-100"
+                              className="font-mono text-xs text-stone-900 bg-white p-3 rounded-xl border border-stone-200/90 shadow-2xs leading-relaxed"
                             >
                               {f}
                             </div>
@@ -509,35 +613,38 @@ export const SessionsView: React.FC<SessionsViewProps> = ({
                       </div>
                     )}
 
-                    {/* Common Traps */}
-                    {session.commonTraps.length > 0 && (
-                      <div className="bg-rose-50/60 rounded-2xl p-3.5 border border-rose-200/60">
-                        <h4 className="font-bold text-rose-800 mb-1.5 flex items-center gap-1.5 text-[12px]">
-                          <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
-                          <span>Exam Traps in this Topic (Watch Out!):</span>
-                        </h4>
-                        <ul className="list-disc list-inside space-y-1 text-slate-700">
+                    {/* Tab 4: Common Traps */}
+                    {currentTab === 'traps' && session.commonTraps.length > 0 && (
+                      <div className="bg-rose-50/60 rounded-2xl p-5 border border-rose-200/70 space-y-2.5">
+                        <div className="flex items-center gap-2 mb-1">
+                          <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                          <h4 className="text-sm font-bold text-rose-950">
+                            High-Risk Exam Traps to Avoid
+                          </h4>
+                        </div>
+                        <ul className="space-y-2 text-xs sm:text-sm text-stone-800 leading-relaxed">
                           {session.commonTraps.map((trap, i) => (
-                            <li key={i} className="leading-relaxed">
-                              {trap}
+                            <li key={i} className="flex items-start gap-2">
+                              <span className="text-rose-500 font-bold">•</span>
+                              <span>{trap}</span>
                             </li>
                           ))}
                         </ul>
                       </div>
                     )}
 
-                    {/* Mobile timer launcher inside expanded */}
-                    <div className="pt-2 flex items-center justify-end sm:hidden">
+                    {/* Mobile timer trigger */}
+                    <div className="pt-2 flex sm:hidden">
                       <button
                         type="button"
                         onClick={() => {
                           playTickSound(soundEnabled);
                           onStartSessionTimer(session);
                         }}
-                        className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-violet-500 shadow-sm active:scale-95"
+                        className="w-full py-2.5 rounded-2xl text-xs font-bold text-white bg-stone-900 hover:bg-black shadow-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
                       >
                         <Play className="w-3.5 h-3.5 fill-white" />
-                        <span>Launch Timer for {session.durationMinutes} min</span>
+                        <span>Launch {session.durationMinutes}-Minute Timer</span>
                       </button>
                     </div>
                   </div>

@@ -7,7 +7,6 @@ import {
   Sparkles,
   Volume2,
   VolumeX,
-  Bell,
   CheckCircle2,
 } from 'lucide-react';
 import { SessionBlock } from '../data/roadmapData';
@@ -27,14 +26,12 @@ export const TimerView: React.FC<TimerViewProps> = ({
   soundEnabled,
   onToggleSound,
 }) => {
-  // Initial duration in seconds (default 25 minutes or session duration)
   const initialDuration = selectedSession ? selectedSession.durationMinutes * 60 : 25 * 60;
   const [totalSeconds, setTotalSeconds] = useState<number>(initialDuration);
   const [secondsRemaining, setSecondsRemaining] = useState<number>(initialDuration);
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [isFinished, setIsFinished] = useState<boolean>(false);
 
-  // Update timer if selectedSession changes
   useEffect(() => {
     if (selectedSession) {
       const dur = selectedSession.durationMinutes * 60;
@@ -98,7 +95,6 @@ export const TimerView: React.FC<TimerViewProps> = ({
     setSecondsRemaining(s);
   };
 
-  // Calculations for circular SVG ring
   const minutes = Math.floor(secondsRemaining / 60);
   const seconds = secondsRemaining % 60;
   const progressRatio = totalSeconds > 0 ? (totalSeconds - secondsRemaining) / totalSeconds : 0;
@@ -108,21 +104,21 @@ export const TimerView: React.FC<TimerViewProps> = ({
   const strokeDashoffset = circumference * (1 - progressRatio);
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 pb-20">
+    <div className="max-w-2xl mx-auto space-y-6 pb-24">
       {/* Session Header Card if active session selected */}
       {selectedSession ? (
-        <div className="bg-white/80 backdrop-blur-md rounded-3xl p-5 border border-indigo-100 shadow-[0_8px_30px_rgba(79,70,229,0.06)] flex items-center justify-between gap-4">
+        <div className="bg-white/90 backdrop-blur-md rounded-3xl p-5 sm:p-6 border border-stone-200/90 shadow-[0_8px_30px_rgba(28,25,23,0.04)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
-              Active Session: {selectedSession.blockNumber}
+            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-200">
+              Active Focus Block: {selectedSession.blockNumber}
             </span>
-            <h3 className="text-base font-bold text-slate-800">{selectedSession.title}</h3>
-            <p className="text-xs text-slate-500 font-medium">{selectedSession.timeSlot} · {selectedSession.garrisonRef}</p>
+            <h3 className="text-base sm:text-lg font-bold text-stone-900">{selectedSession.title}</h3>
+            <p className="text-xs text-stone-500 font-medium">{selectedSession.timeSlot} · {selectedSession.garrisonRef}</p>
           </div>
           {onSessionComplete && (
             <button
               onClick={() => onSessionComplete(selectedSession.id)}
-              className="flex-shrink-0 px-3.5 py-2 rounded-2xl bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 text-xs font-bold transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+              className="flex-shrink-0 px-4 py-2 rounded-2xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-bold transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 shadow-2xs"
             >
               <CheckCircle2 className="w-4 h-4 text-teal-600" />
               <span>Mark Done</span>
@@ -130,49 +126,47 @@ export const TimerView: React.FC<TimerViewProps> = ({
           )}
         </div>
       ) : (
-        <div className="bg-white/70 backdrop-blur-md rounded-3xl p-4 border border-indigo-100/60 shadow-xs flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs text-slate-600 font-medium">
-            <Clock className="w-4 h-4 text-indigo-500" />
-            <span>Standalone Focus Mode (or launch directly from any session block)</span>
+        <div className="bg-white/80 backdrop-blur-md rounded-3xl p-4 sm:p-5 border border-stone-200/80 shadow-2xs flex items-center justify-between">
+          <div className="flex items-center gap-2.5 text-xs text-stone-600 font-medium">
+            <Clock className="w-4 h-4 text-stone-500" />
+            <span>Standalone Focus Mode (or select any block in Sessions to link)</span>
           </div>
           <button
             onClick={onToggleSound}
-            className="text-xs text-slate-500 hover:text-indigo-600 flex items-center gap-1"
+            className="text-xs text-stone-500 hover:text-stone-800 flex items-center gap-1.5 cursor-pointer"
           >
-            {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-indigo-500" /> : <VolumeX className="w-3.5 h-3.5 text-slate-400" />}
-            <span>{soundEnabled ? 'Chimes ON' : 'Muted'}</span>
+            {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-amber-600" /> : <VolumeX className="w-3.5 h-3.5 text-stone-400" />}
+            <span className="font-semibold">{soundEnabled ? 'Chimes ON' : 'Muted'}</span>
           </button>
         </div>
       )}
 
       {/* Main Timer Display */}
       <div
-        className={`relative bg-white/80 backdrop-blur-xl rounded-3xl p-8 sm:p-12 border border-indigo-500/12 shadow-[0_12px_40px_rgba(79,70,229,0.08)] flex flex-col items-center justify-center transition-all duration-500 ${
+        className={`relative bg-white/95 backdrop-blur-xl rounded-3xl p-8 sm:p-14 border border-stone-200/90 shadow-[0_12px_45px_rgba(28,25,23,0.05)] flex flex-col items-center justify-center transition-all duration-500 ${
           isRunning
-            ? 'shadow-[0_12px_50px_rgba(99,102,241,0.18)] ring-2 ring-indigo-200/50'
+            ? 'shadow-[0_16px_50px_rgba(217,119,6,0.12)] ring-2 ring-amber-200/60'
             : isFinished
-            ? 'shadow-[0_12px_50px_rgba(20,184,166,0.25)] ring-2 ring-teal-300'
+            ? 'shadow-[0_16px_50px_rgba(13,148,136,0.15)] ring-2 ring-teal-300'
             : ''
         }`}
       >
         {/* Circular Countdown Ring */}
-        <div className="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center">
+        <div className="relative w-64 h-64 sm:w-76 sm:h-76 flex items-center justify-center">
           <svg className="w-full h-full transform -rotate-90">
-            {/* Background ring */}
             <circle
               cx="50%"
               cy="50%"
               r={radius}
-              stroke="#EEF2FF"
+              stroke="#EFECE6"
               strokeWidth={strokeWidth}
               fill="transparent"
             />
-            {/* Depleting progress ring */}
             <circle
               cx="50%"
               cy="50%"
               r={radius}
-              stroke="url(#timerGradient)"
+              stroke="url(#warmTimerGradient)"
               strokeWidth={strokeWidth}
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
@@ -181,45 +175,45 @@ export const TimerView: React.FC<TimerViewProps> = ({
               fill="transparent"
             />
             <defs>
-              <linearGradient id="timerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#6366F1" />
-                <stop offset="50%" stopColor="#8B5CF6" />
-                <stop offset="100%" stopColor="#14B8A6" />
+              <linearGradient id="warmTimerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#D97706" />
+                <stop offset="50%" stopColor="#4F46E5" />
+                <stop offset="100%" stopColor="#0D9488" />
               </linearGradient>
             </defs>
           </svg>
 
           {/* Center Digital Display */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-4xl sm:text-5xl font-black text-slate-800 tracking-tight tabular-nums">
+          <div className="absolute inset-0 flex flex-col items-center justify-center space-y-1">
+            <span className="text-5xl sm:text-6xl font-black text-stone-900 tracking-tight tabular-nums font-mono">
               {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
             </span>
-            <span className="text-xs font-semibold text-slate-400 mt-1 uppercase tracking-wider">
+            <span className="text-xs font-bold text-stone-400 uppercase tracking-widest pt-1">
               {isFinished
-                ? 'Time Complete 🎉'
+                ? 'Block Complete 🎉'
                 : isRunning
-                ? 'Focusing Deeply'
-                : 'Ready to Start'}
+                ? 'Deep Solving'
+                : 'Ready to Solve'}
             </span>
             {isRunning && (
-              <span className="inline-flex items-center gap-1 text-[11px] text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full mt-2 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping"></span>
-                In the Zone
+              <span className="inline-flex items-center gap-1.5 text-xs text-amber-900 bg-amber-50 px-3 py-1 rounded-full font-bold border border-amber-200/80 shadow-2xs mt-2">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                In the Flow
               </span>
             )}
           </div>
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-4 mt-8">
+        <div className="flex items-center gap-4 mt-10">
           <button
             onClick={handleStartPause}
-            className={`flex items-center gap-2 px-8 py-3.5 rounded-2xl font-bold text-sm text-white shadow-md transition-all duration-200 cursor-pointer active:scale-95 ${
+            className={`flex items-center gap-2.5 px-9 py-4 rounded-2xl font-extrabold text-sm transition-all duration-200 cursor-pointer active:scale-95 ${
               isRunning
-                ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-200'
+                ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-md shadow-amber-200'
                 : isFinished
-                ? 'bg-teal-500 hover:bg-teal-600 shadow-teal-200'
-                : 'bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 shadow-indigo-200 animate-breathe'
+                ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-md shadow-teal-200'
+                : 'bg-stone-900 hover:bg-black text-white shadow-lg shadow-stone-300 animate-breathe'
             }`}
           >
             {isRunning ? (
@@ -243,22 +237,22 @@ export const TimerView: React.FC<TimerViewProps> = ({
           <button
             onClick={handleReset}
             title="Reset timer"
-            className="p-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all active:scale-95 cursor-pointer"
+            className="p-4 rounded-2xl bg-[#EFECE6] hover:bg-[#E5E2DC] text-stone-700 transition-all active:scale-95 cursor-pointer border border-stone-200"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
         </div>
 
         {/* Quick Presets */}
-        <div className="mt-8 pt-6 border-t border-slate-100/90 w-full flex flex-col items-center">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">
-            Routine Presets
+        <div className="mt-10 pt-6 border-t border-stone-200/70 w-full flex flex-col items-center">
+          <span className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">
+            Standard Presets
           </span>
-          <div className="flex flex-wrap items-center justify-center gap-2">
+          <div className="flex flex-wrap items-center justify-center gap-2.5">
             {[
               { label: '25m Pomodoro', min: 25 },
               { label: '45m Short Block', min: 45 },
-              { label: '90m Recall / Review', min: 90 },
+              { label: '90m Revision Round', min: 90 },
               { label: '120m Standard 2h Block', min: 120 },
             ].map((p) => {
               const isCurrent = totalSeconds === p.min * 60;
@@ -266,10 +260,10 @@ export const TimerView: React.FC<TimerViewProps> = ({
                 <button
                   key={p.min}
                   onClick={() => setPreset(p.min)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     isCurrent
-                      ? 'bg-indigo-100 text-indigo-700 font-bold border border-indigo-300'
-                      : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/60'
+                      ? 'bg-stone-900 text-white shadow-xs'
+                      : 'bg-[#F5F4EE] hover:bg-white text-stone-700 border border-stone-200/90 shadow-2xs'
                   }`}
                 >
                   {p.label}
