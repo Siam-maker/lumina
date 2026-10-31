@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Calendar,
   Clock,
   BookOpen,
   Sparkles,
   Award,
-  Layers,
 } from 'lucide-react';
 import { Header } from './components/Header';
 import { SessionsView } from './components/SessionsView';
@@ -15,13 +14,15 @@ import { ErrorLogView } from './components/ErrorLogView';
 import { BlueprintView } from './components/BlueprintView';
 import { QuestionBankView } from './components/QuestionBankModal';
 import { ResetModal } from './components/ResetModal';
+import { ExamDateModal } from './components/ExamDateModal';
 import { AmbientPlayerAndScratchpad } from './components/AmbientPlayerAndScratchpad';
 import {
   SESSIONS_DATA,
   SessionBlock,
   ErrorLogItem,
 } from './data/roadmapData';
-import { playTickSound } from './utils/sound';
+import { playTickSound, playTimerDoneChime } from './utils/sound';
+import { launchConfetti } from './utils/confetti';
 
 type TabType = 'sessions' | 'timer' | 'recall' | 'errors' | 'blueprint' | 'questions';
 
@@ -80,8 +81,17 @@ export default function App() {
   const [masteredFormulas, setMasteredFormulas] = useState<Record<string, boolean>>({});
   const [errorLogs, setErrorLogs] = useState<ErrorLogItem[]>(INITIAL_ERROR_LOGS);
 
-  // Selected session for Timer
+  // Exam Target Date (Default: 5 Nov 2026, 09:00 AM)
+  const [examTargetDate, setExamTargetDate] = useState<string>('2026-11-05T09:00:00+06:00');
+  const [isExamDateModalOpen, setIsExamDateModalOpen] = useState(false);
+
+  // Global Study Focus Timer State (Runs continuously in background across all tabs!)
+  const [timerTotalSeconds, setTimerTotalSeconds] = useState<number>(25 * 60);
+  const [timerSecondsRemaining, setTimerSecondsRemaining] = useState<number>(25 * 60);
+  const [timerIsRunning, setTimerIsRunning] = useState<boolean>(false);
+  const [timerIsFinished, setTimerIsFinished] = useState<boolean>(false);
   const [selectedSessionForTimer, setSelectedSessionForTimer] = useState<SessionBlock | null>(null);
+  const timerEndTimeRef = useRef<number | null>(null);
 
   // Selected question for modal inspection
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
@@ -119,6 +129,9 @@ export default function App() {
 
       const savedSound = localStorage.getItem('ipe105_sound_enabled');
       if (savedSound !== null) setSoundEnabled(savedSound === 'true');
+
+      const savedExamDate = localStorage.getItem('ipe105_exam_target_date');
+      if (savedExamDate) setExamTargetDate(savedExamDate);
     } catch {
       // LocalStorage error fallback
     } finally {
@@ -135,9 +148,97 @@ export default function App() {
       localStorage.setItem('ipe105_mastered_formulas', JSON.stringify(masteredFormulas));
       localStorage.setItem('ipe105_error_logs', JSON.stringify(errorLogs));
       localStorage.setItem('ipe105_sound_enabled', String(soundEnabled));
+      localStorage.setItem('ipe105_exam_target_date', examTargetDate);
     }
-  }, [completedSessions, weakSessions, solvedQuestions, masteredFormulas, errorLogs, soundEnabled, isLoading]);
+  }, [completedSessions, weakSessions, solvedQuestions, masteredFormulas, errorLogs, soundEnabled, examTargetDate, isLoading]);
 
+  // Global Timer Tick Engine (uses Date.now() timestamping for zero-drift in background tabs)
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+
+    if (timerIsRunning) {
+      if (!timerEndTimeRef.current) {
+        timerEndTimeRef.current = Date.now() + timerSecondsRemaining * 1000;
+      }
+
+      interval = setInterval(() => {
+        const remainingMs = (timerEndTimeRef.current as number) - Date.now();
+        const remainingSec = Math.max(0, Math.round(remainingMs / 1000));
+
+        setTimerSecondsRemaining(remainingSec);
+
+        if (remainingSec <= 0) {
+          clearInterval(interval as NodeJS.Timeout);
+          setTimerIsRunning(false);
+          setTimerIsFinished(true);
+          timerEndTimeRef.current = null;
+
+          playTimerDoneChime(soundEnabled);
+          launchConfetti(window.innerWidth / 2, window.innerHeight / 2, 50);
+          showToast('Focus block timer completed! 🎉');
+
+          // Auto-prompt or mark active session
+          if (selectedSessionForTimer) {
+            handleToggleSession(selectedSessionForTimer.id);
+          }
+        }
+      }, 1000);
+    } else {
+      timerEndTimeRef.current = null;
+      if (interval) clearInterval(interval);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [timerIsRunning, soundEnabled, selectedSessionForTimer]);
+
+  const handleStartPauseTimer = () => {
+    playTickSound(soundEnabled);
+    if (timerIsFinished) {
+      setTimerSecondsRemaining(timerTotalSeconds);
+      setTimerIsFinished(false);
+      timerEndTimeRef.current = Date.now() + timerTotalSeconds * 1000;
+      setTimerIsRunning(true);
+    } else {
+      if (!timerIsRunning) {
+        timerEndTimeRef.current = Date.now() + timerSecondsRemaining * 1000;
+      } else {
+        timerEndTimeRef.current = null;
+      }
+      setTimerIsRunning(!timerIsRunning);
+    }
+  };
+
+  const handleResetTimer = () => {
+    playTickSound(soundEnabled);
+    setTimerIsRunning(false);
+    setTimerIsFinished(false);
+    timerEndTimeRef.current = null;
+    setTimerSecondsRemaining(timerTotalSeconds);
+  };
+
+  const handleSetTimerDuration = (seconds: number) => {
+    playTickSound(soundEnabled);
+    setTimerIsRunning(false);
+    setTimerIsFinished(false);
+    timerEndTimeRef.current = null;
+    setTimerTotalSeconds(seconds);
+    setTimerSecondsRemaining(seconds);
+  };
+
+  const handleAdjustTimerTime = (deltaSeconds: number) => {
+    playTickSound(soundEnabled);
+    setTimerSecondsRemaining((prev) => {
+      const next = Math.max(10, prev + deltaSeconds);
+      if (timerIsRunning) {
+        timerEndTimeRef.current = Date.now() + next * 1000;
+      }
+      return next;
+    });
+  };
+
+  // Handler toggles
   const handleToggleSession = (sessionId: string) => {
     setCompletedSessions((prev) => {
       const nextState = !prev[sessionId];
@@ -175,8 +276,14 @@ export default function App() {
 
   const handleStartSessionTimer = (session: SessionBlock) => {
     setSelectedSessionForTimer(session);
+    const secs = session.durationMinutes * 60;
+    setTimerTotalSeconds(secs);
+    setTimerSecondsRemaining(secs);
+    timerEndTimeRef.current = Date.now() + secs * 1000;
+    setTimerIsRunning(true);
+    setTimerIsFinished(false);
     setActiveTab('timer');
-    showToast(`Focus timer ready for: ${session.title}`);
+    showToast(`Timer started: ${session.durationMinutes}m for ${session.title}`);
   };
 
   const handleSelectQuestion = (qId: string) => {
@@ -212,8 +319,18 @@ export default function App() {
     setSolvedQuestions({});
     setMasteredFormulas({});
     setErrorLogs(INITIAL_ERROR_LOGS);
+    setExamTargetDate('2026-11-05T09:00:00+06:00');
+    setTimerIsRunning(false);
+    setTimerIsFinished(false);
+    setTimerTotalSeconds(25 * 60);
+    setTimerSecondsRemaining(25 * 60);
     localStorage.clear();
     showToast('All progress reset to fresh baseline.');
+  };
+
+  const handleSaveExamDate = (newDateStr: string) => {
+    setExamTargetDate(newDateStr);
+    showToast('Exam countdown target updated!');
   };
 
   // Export JSON Backup
@@ -226,6 +343,7 @@ export default function App() {
       solvedQuestions,
       masteredFormulas,
       errorLogs,
+      examTargetDate,
     };
     const jsonStr = JSON.stringify(data, null, 2);
     const blob = new Blob([jsonStr], { type: 'application/json' });
@@ -255,6 +373,7 @@ export default function App() {
           if (parsed.solvedQuestions) setSolvedQuestions(parsed.solvedQuestions);
           if (parsed.masteredFormulas) setMasteredFormulas(parsed.masteredFormulas);
           if (parsed.errorLogs) setErrorLogs(parsed.errorLogs);
+          if (parsed.examTargetDate) setExamTargetDate(parsed.examTargetDate);
           showToast('Progress successfully restored from backup!');
         } catch {
           showToast('Error: Invalid JSON file format.');
@@ -299,6 +418,12 @@ export default function App() {
           onOpenResetModal={() => setIsResetModalOpen(true)}
           onExportData={handleExportData}
           onImportData={handleImportData}
+          examTargetDate={examTargetDate}
+          onOpenExamDateModal={() => setIsExamDateModalOpen(true)}
+          timerIsRunning={timerIsRunning}
+          timerSecondsRemaining={timerSecondsRemaining}
+          timerTotalSeconds={timerTotalSeconds}
+          onToggleTimer={handleStartPauseTimer}
         />
 
         <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-8">
@@ -333,6 +458,14 @@ export default function App() {
                   }}
                   soundEnabled={soundEnabled}
                   onToggleSound={() => setSoundEnabled(!soundEnabled)}
+                  totalSeconds={timerTotalSeconds}
+                  secondsRemaining={timerSecondsRemaining}
+                  isRunning={timerIsRunning}
+                  isFinished={timerIsFinished}
+                  onStartPause={handleStartPauseTimer}
+                  onResetTimer={handleResetTimer}
+                  onSetDuration={handleSetTimerDuration}
+                  onAdjustTime={handleAdjustTimerTime}
                 />
               )}
 
@@ -407,6 +540,15 @@ export default function App() {
 
       {/* Lo-Fi Ambient Study Soundscape & Student Scratchpad */}
       <AmbientPlayerAndScratchpad soundEnabled={soundEnabled} />
+
+      {/* Exam Target Date Configuration Modal */}
+      <ExamDateModal
+        isOpen={isExamDateModalOpen}
+        onClose={() => setIsExamDateModalOpen(false)}
+        currentExamDate={examTargetDate}
+        onSaveExamDate={handleSaveExamDate}
+        soundEnabled={soundEnabled}
+      />
 
       {/* Reset Confirmation Modal */}
       <ResetModal

@@ -10,6 +10,9 @@ import {
   BookOpen,
   Sparkles,
   Award,
+  Pause,
+  Play,
+  Edit2,
 } from 'lucide-react';
 import { MOTIVATIONAL_QUOTES } from '../data/roadmapData';
 import { playTickSound } from '../utils/sound';
@@ -24,6 +27,14 @@ interface HeaderProps {
   onOpenResetModal: () => void;
   onExportData: () => void;
   onImportData: () => void;
+  // Exam countdown configuration
+  examTargetDate: string;
+  onOpenExamDateModal: () => void;
+  // Global Study Focus Timer Status
+  timerIsRunning: boolean;
+  timerSecondsRemaining: number;
+  timerTotalSeconds: number;
+  onToggleTimer: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -36,6 +47,12 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenResetModal,
   onExportData,
   onImportData,
+  examTargetDate,
+  onOpenExamDateModal,
+  timerIsRunning,
+  timerSecondsRemaining,
+  timerTotalSeconds,
+  onToggleTimer,
 }) => {
   // Rotating motivational line
   const [quoteIndex, setQuoteIndex] = useState(0);
@@ -52,7 +69,7 @@ export const Header: React.FC<HeaderProps> = ({
     return () => clearInterval(interval);
   }, []);
 
-  // Exam Countdown (Target: 5 Nov 2026, 09:00 AM)
+  // Exam Countdown (dynamic from examTargetDate)
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
     hours: number;
@@ -62,7 +79,7 @@ export const Header: React.FC<HeaderProps> = ({
   }>({ days: 4, hours: 12, minutes: 0, seconds: 0, isPast: false });
 
   useEffect(() => {
-    const targetDate = new Date('2026-11-05T09:00:00+06:00').getTime();
+    const targetDate = new Date(examTargetDate).getTime();
 
     const updateTimer = () => {
       const now = new Date().getTime();
@@ -82,7 +99,7 @@ export const Header: React.FC<HeaderProps> = ({
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [examTargetDate]);
 
   const progressPercent = totalSessionsCount > 0 ? Math.round((completedSessionsCount / totalSessionsCount) * 100) : 0;
   const radius = 22;
@@ -97,6 +114,11 @@ export const Header: React.FC<HeaderProps> = ({
     { id: 'blueprint', label: 'Exam Blueprint', icon: Award },
     { id: 'questions', label: 'Question Bank', icon: BookOpen },
   ] as const;
+
+  // Format global timer display (MM:SS)
+  const timerMin = Math.floor(timerSecondsRemaining / 60);
+  const timerSec = timerSecondsRemaining % 60;
+  const hasActiveTimer = timerIsRunning || (timerSecondsRemaining > 0 && timerSecondsRemaining < timerTotalSeconds);
 
   return (
     <header className="sticky top-0 z-40 bg-[#FAF9F5]/90 backdrop-blur-xl border-b border-stone-200/80 shadow-[0_4px_24px_-4px_rgba(28,25,23,0.03)] transition-all">
@@ -166,13 +188,52 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Exam Countdown & Actions */}
-          <div className="flex items-center justify-between sm:justify-end gap-3 self-end sm:self-center w-full sm:w-auto">
-            {/* Live Countdown in warm off-white badges */}
-            <div className="flex items-center gap-2 bg-[#F5F4EE] border border-stone-200/90 px-3.5 py-1.5 rounded-2xl shadow-2xs">
-              <Clock className="w-3.5 h-3.5 text-stone-500 flex-shrink-0" />
+          {/* Exam Countdown, Live Focus Timer Pill & Actions */}
+          <div className="flex items-center justify-between sm:justify-end gap-3 self-end sm:self-center w-full sm:w-auto flex-wrap">
+            {/* Live Focus Timer Pill if active */}
+            {hasActiveTimer && (
+              <div className="flex items-center gap-2 bg-stone-900 text-white px-3 py-1.5 rounded-2xl shadow-sm animate-in fade-in">
+                <button
+                  onClick={() => {
+                    playTickSound(soundEnabled);
+                    onToggleTimer();
+                  }}
+                  title={timerIsRunning ? 'Pause Study Timer' : 'Resume Study Timer'}
+                  className="p-1 rounded-lg bg-stone-800 hover:bg-stone-700 transition-colors cursor-pointer"
+                >
+                  {timerIsRunning ? (
+                    <Pause className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                  ) : (
+                    <Play className="w-3.5 h-3.5 text-teal-400 fill-teal-400" />
+                  )}
+                </button>
+
+                <button
+                  onClick={() => {
+                    playTickSound(soundEnabled);
+                    onTabChange('timer');
+                  }}
+                  title="Open Focus Timer View"
+                  className="text-xs font-mono font-bold tabular-nums hover:underline cursor-pointer flex items-center gap-1.5"
+                >
+                  <span className="text-stone-300 text-[10px] uppercase font-sans">Block:</span>
+                  <span>{String(timerMin).padStart(2, '0')}:{String(timerSec).padStart(2, '0')}</span>
+                </button>
+              </div>
+            )}
+
+            {/* Clickable Live Exam Countdown */}
+            <div
+              onClick={() => {
+                playTickSound(soundEnabled);
+                onOpenExamDateModal();
+              }}
+              title="Click to set or adjust Exam Date & Time"
+              className="group flex items-center gap-2 bg-[#F5F4EE] hover:bg-[#EFECE6] border border-stone-200/90 hover:border-stone-400 px-3.5 py-1.5 rounded-2xl shadow-2xs transition-all cursor-pointer"
+            >
+              <Clock className="w-3.5 h-3.5 text-stone-500 group-hover:text-amber-700 flex-shrink-0 transition-colors" />
               <div className="flex items-center gap-1.5 text-xs">
-                <span className="text-stone-500 font-medium text-[11px]">Exam in:</span>
+                <span className="text-stone-500 font-medium text-[11px] group-hover:text-stone-700">Exam in:</span>
                 <div className="flex items-baseline gap-1 font-bold tabular-nums text-stone-800">
                   <span className="bg-white px-2 py-0.5 rounded-lg border border-stone-200 text-stone-800 shadow-2xs font-mono text-[11px]">
                     {String(timeLeft.days).padStart(2, '0')}d
@@ -191,6 +252,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </span>
                 </div>
               </div>
+              <Edit2 className="w-3 h-3 text-stone-400 group-hover:text-stone-700 ml-0.5" />
             </div>
 
             {/* Quick Actions */}
@@ -246,7 +308,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Tab Switcher with sliding indicator */}
+        {/* Tab Switcher */}
         <div className="py-2.5 overflow-x-auto scrollbar-none">
           <nav className="inline-flex p-1.5 bg-[#F0EFE9] rounded-2xl border border-stone-200/80 gap-1">
             {tabs.map((tab) => {
